@@ -1,3 +1,4 @@
+# k8s version of https://github.com/sleshchenko/spring-petclinic/blob/master/devfile.yaml
 specVersion: 0.0.1
 name: spring-petclinic
 projects:
@@ -10,7 +11,7 @@ components:
     type: cheEditor
     id: eclipse/che-theia/next
   - alias: mysql
-    type: openshift
+    type: kubernetes
     referenceContent: |
       apiVersion: v1
       kind: List
@@ -76,7 +77,7 @@ components:
             requests:
               storage: 1Gi
   - alias: petclinic
-    type: openshift
+    type: kubernetes
     referenceContent: |
       apiVersion: v1
       kind: List
@@ -123,19 +124,22 @@ components:
           selector:
             app.kubernetes.io/name: petclinic
             app.kubernetes.io/component: web-app
-      - apiVersion: v1
-        kind: Route
+      - apiVersion: extensions/v1beta1
+        kind: Ingress
         metadata:
           name: nodejs-web-endpoint
           labels:
             app.kubernetes.io/name: petclinic
             app.kubernetes.io/component: web-app
         spec:
-          to:
-            kind: Service
-            name: petclinic
-          port:
-            targetPort: web
+          rules:
+          - host: petclinic.192.168.99.107.nip.io
+            http:
+              paths:
+              - path: /
+                backend:
+                  serviceName: petclinic
+                  servicePort: 80
       - apiVersion: v1
         kind: PersistentVolumeClaim
         metadata:
